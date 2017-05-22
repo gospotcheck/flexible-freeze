@@ -57,6 +57,8 @@ parser.add_argument("-p", "--port", dest="dbport",
                   help="database port")
 parser.add_argument("-w", "--password", dest="dbpass",
                   help="database password")
+parser.add_argument("-s", dest="sslmode", action="store_true",
+                  help="require ssl mode")
 
 args = parser.parse_args()
 
@@ -72,7 +74,7 @@ def _print(some_message):
     sys.stdout.flush()
     return True
 
-def dbconnect(dbname, dbuser, dbhost, dbport, dbpass):
+def dbconnect(dbname, dbuser, dbhost, dbport, dbpass, sslmode):
 
     if dbname:
         connect_string ="dbname=%s application_name=flexible_freeze" % dbname
@@ -92,6 +94,8 @@ def dbconnect(dbname, dbuser, dbhost, dbport, dbpass):
     if dbport:
         connect_string += " port=%s " % dbport
 
+    if sslmode:
+        connect_string += " sslmode=require "
     try:
         conn = psycopg2.connect( connect_string )
         conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
@@ -136,7 +140,7 @@ if args.logfile:
 # do we have a database list?
 # if not, connect to "postgres" database and get a list of non-system databases
 if args.dblist is None:
-    conn = dbconnect("postgres", args.dbuser, args.dbhost, args.dbport, args.dbpass)
+    conn = dbconnect("postgres", args.dbuser, args.dbhost, args.dbport, args.dbpass, args.sslmode)
     cur = conn.cursor()
     cur.execute("""SELECT datname FROM pg_database
         WHERE datname NOT IN ('postgres','template1','template0')
@@ -167,7 +171,7 @@ for db in dblist:
         break
     else:
         dbcount += 1
-    conn = dbconnect(db, args.dbuser, args.dbhost, args.dbport, args.dbpass)
+    conn = dbconnect(db, args.dbuser, args.dbhost, args.dbport, args.dbpass, args.sslmode)
     cur = conn.cursor()
     cur.execute("SET vacuum_cost_delay = {0}".format(args.costdelay))
     cur.execute("SET vacuum_cost_limit = {0}".format(args.costlimit))
