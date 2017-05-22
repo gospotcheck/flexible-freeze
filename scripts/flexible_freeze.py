@@ -57,7 +57,7 @@ parser.add_argument("-p", "--port", dest="dbport",
                   help="database port")
 parser.add_argument("-w", "--password", dest="dbpass",
                   help="database password")
-parser.add_argument("-s", dest="sslmode", action="store_true",
+parser.add_argument("-s", "--ssl", dest="sslmode", action="store_true",
                   help="require ssl mode")
 
 args = parser.parse_args()
